@@ -46,19 +46,22 @@ function QuadtreeTestRemove(Quadtree, Size, RemoveNumber, Disp)
   
   RemoveNumber = RemoveNumber + Size
   
-  
   for i=Size, RemoveNumber do
-    if type(Disp) == "number" then
-      lat = math.random(1+Disp,9999-Disp)
-      lon = math.random(1+Disp,9999-Disp)
-    else
+    if type(Disp) == "string" then
+      Disp = 0
       lat = math.random(1,9999)
       lon = math.random(1,9999)
+      Quadtree:Insert(RandomPoint(lat, lon, "SpecialUnit", 0))
+      lat = math.random(1,9999)
+      lon = math.random(1,9999)
+    else
+      lat = math.random(1+Disp,9999-Disp)
+      lon = math.random(1+Disp,9999-Disp)
+      Quadtree:Insert(RandomPoint(lat, lon, "SpecialUnit", 0))
     end
-    Quadtree:Insert(RandomPoint(lat, lon, "SpecialUnit", 0))
-    
+
     local Time = os.clock()
-    Quadtree:Remove(POINT:New(lat, lon, "SpecialUnit", Disp))
+    Quadtree:Remove(RandomPoint(lat, lon, "SpecialUnit", Disp))
     AccTime = AccTime + os.clock() - Time
   end
   print(string.format("%.3f", AccTime))

@@ -17,7 +17,7 @@ function POINT:New(X, Y, Data)
   self.X = X
   self.Y = Y
   self.Data = Data
-  print("New Point : "..self.X..", "..self.Y..", "..self.Data)
+  --print("New Point : "..self.X..", "..self.Y..", "..self.Data)
   return self
 end
 
@@ -253,7 +253,7 @@ function QUADTREE:Find(Point)
       PreviousSize = PotentialUnitsSize 
     end
     
-    Radius = Radius + 100
+    Radius = Radius + 100 -- @TODO: This needs to be dynamic, depending on the number of units are stored
      
   end
     
@@ -533,7 +533,7 @@ for i=1, 20 do
   local MyQuadtree = QUADTREE:New(BOUNDING_BOX:New(0, 0, 10000, 10000))
   
   
-  QuadtreeTestRemove(MyQuadtree, 10000, 10000, 0)
+  QuadtreeTestRemove(MyQuadtree, 100000, 10000, "random")
   -- QuadtreeTestInsert(MyQuadtree, 10000, 1000)
 
   collectgarbage(collect)
