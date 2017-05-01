@@ -578,31 +578,34 @@ end
 -- Main
 -------------------------------------------------------------------------------------
 require "Tests"
-
-
 math.randomseed(os.time())
 --[[
+-- Uncomment to start the profiler
 profiler = newProfiler()
 profiler:start()
 --]]
+--[[
+-- Quadtree tests
 for i=1, 20 do
   local MyQuadtree = QUADTREE:New(BOUNDING_BOX:New(0, 0, 10000, 10000))
   
-  QuadtreeTestInsert(MyQuadtree, 10000, 10000, 1000)
+  QuadtreeTestInsert(MyQuadtree, 100000, 10000)
 
   -- MyQuadtree:Print()
   collectgarbage(collect)
 end
 --]]
---[[
+---[[
+-- Array tests
 for i=1, 20 do
   local Array = {}
-  ArrayTestRemove(Array, 100000, 10000)
+  ArrayTestInsert(Array, 10000, 1000)
 end
 --]]
 --[[
---local outfile = io.open( "profile.txt", "w+" )
---profiler:stop()
---profiler:report( outfile )
---outfile:close()
+-- Uncomment to stop the profiler
+profiler:stop()
+local outfile = io.open( "profile.txt", "w+" )
+profiler:report( outfile )
+outfile:close()
 --]]

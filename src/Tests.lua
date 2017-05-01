@@ -11,17 +11,46 @@ function QuadtreeFill(Quadtree, Size)
   end
 end
 
-function QuadtreeTestInsert(Quadtree, Size, InsertNumber, Disp)
+function ArrayFill(Array, Size)
+  for i=1, Size do
+    local Data = "UNIT#"..tostring(i)
+    table.insert(Array, RandomPoint(math.random(1,9999), math.random(1,9999), Data, 0))
+  end
+end
+
+----------------------------------------------------------------------------
+-- Quadtree Tests
+----------------------------------------------------------------------------
+function QuadtreeTestInsert(Quadtree, Size, InsertNumber)
   local AccTime = 0
   QuadtreeFill(Quadtree, Size)
   
   Size = Size + 1
   InsertNumber = InsertNumber + Size
 
-  for i= Size, InsertNumber do
+  for i=Size, InsertNumber do
     local Data = "SpecialUnit#"..tostring(i-Size)
     local Time = os.clock()
-    Quadtree:Insert(RandomPoint(math.random(Disp+1,9999-Disp), math.random(Disp+1,9999-Disp), Data, Disp))
+    Quadtree:Insert(RandomPoint(math.random(1,9999), math.random(1,9999), Data, 0))
+    AccTime = AccTime + os.clock() - Time
+  end
+  print(string.format("%.3f", AccTime))
+end
+
+-----------------------------------------------------------------------------
+-- Array Tests
+-----------------------------------------------------------------------------
+function ArrayTestInsert(Array, ArraySize, InsertNumber)
+  local AccTime = 0
+  ArrayFill(Array, ArraySize)
+  
+  ArraySize = ArraySize + 1
+  InsertNumber = InsertNumber + ArraySize
+  
+  for i=ArraySize, InsertNumber do
+    local Data = "UNITAdd+"..tostring(i)
+    local Time = os.clock()
+    table.insert(Array, RandomPoint(math.random(1,9999), math.random(1,9999), Data, 0))
     AccTime = AccTime + os.clock() - Time
   end
   print(string.format("%.3f", AccTime))
@@ -71,28 +100,6 @@ function QuadtreeTestFind(Quadtree, Size, FindNumber)
   end
   print(string.format("%.3f", AccTime))
 end 
-
-
-function ArrayTestInsert(TestArray, ArraySize, InsertNumber)
-  for i=1, ArraySize do
-    local lat = math.random(1,9999)
-    local lon = math.random(1,9999)
-    local Data = "UNIT#"..tostring(i)
-    table.insert(TestArray, POINT:New(lat, lon, Data))
-  end
-  
-  ArraySize = ArraySize + 1
-  InsertNumber = InsertNumber + ArraySize
-  
-  local Time = os.clock()
-  for i= ArraySize, InsertNumber do
-    local lat = math.random(1,9999)
-    local lon = math.random(1,9999)
-    local Data = "UNITAdd+"..tostring(i)
-    table.insert(TestArray, POINT:New(lat, lon, Data))
-  end
-  print(string.format("%.3f", os.clock() - Time))
-end
 
 
 function ArrayTestRemove(TestArray, ArraySize, RemoveNumber)
