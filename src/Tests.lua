@@ -25,11 +25,11 @@ function QuadtreeTestInsert(Quadtree, Size, InsertNumber)
   local AccTime = 0
   QuadtreeFill(Quadtree, Size)
   
-  Size = Size + 1
+
   InsertNumber = InsertNumber + Size
 
   for i=Size, InsertNumber do
-    local Data = "SpecialUnit#"..tostring(i-Size)
+    local Data = "SpecialUnit#"..tostring(i-Size+1)
     local Time = os.clock()
     Quadtree:Insert(RandomPoint(math.random(1,9999), math.random(1,9999), Data, 0))
     AccTime = AccTime + os.clock() - Time
@@ -37,18 +37,43 @@ function QuadtreeTestInsert(Quadtree, Size, InsertNumber)
   print(string.format("%.3f", AccTime))
 end
 
+
+function QuadtreeTestRemove(Quadtree, Size, RemoveNumber, Disp)
+  local AccTime = 0
+  local lat
+  local lon
+  QuadtreeFill(Quadtree, Size)
+  
+  RemoveNumber = RemoveNumber + Size
+  
+  
+  for i=Size, RemoveNumber do
+    if type(Disp) == "number" then
+      lat = math.random(1+Disp,9999-Disp)
+      lon = math.random(1+Disp,9999-Disp)
+    else
+      lat = math.random(1,9999)
+      lon = math.random(1,9999)
+    end
+    Quadtree:Insert(RandomPoint(lat, lon, "SpecialUnit", 0))
+    
+    local Time = os.clock()
+    Quadtree:Remove(POINT:New(lat, lon, "SpecialUnit", Disp))
+    AccTime = AccTime + os.clock() - Time
+  end
+  print(string.format("%.3f", AccTime))
+end 
 -----------------------------------------------------------------------------
 -- Array Tests
 -----------------------------------------------------------------------------
-function ArrayTestInsert(Array, ArraySize, InsertNumber)
+function ArrayTestInsert(Array, Size, InsertNumber)
   local AccTime = 0
-  ArrayFill(Array, ArraySize)
+  ArrayFill(Array, Size)
   
-  ArraySize = ArraySize + 1
-  InsertNumber = InsertNumber + ArraySize
+  InsertNumber = InsertNumber + Size
   
-  for i=ArraySize, InsertNumber do
-    local Data = "UNITAdd+"..tostring(i)
+  for i=Size, InsertNumber do
+    local Data = "SpecialUnit#"..tostring(i-Size+1)
     local Time = os.clock()
     table.insert(Array, RandomPoint(math.random(1,9999), math.random(1,9999), Data, 0))
     AccTime = AccTime + os.clock() - Time
@@ -57,27 +82,7 @@ function ArrayTestInsert(Array, ArraySize, InsertNumber)
 end
 
 --[[
-function QuadtreeTestRemove(Quadtree, Size, RemoveNumber)
-  local AccTime = 0
-  for i=1, Size do
-    local lat = math.random(1,9999)
-    local lon = math.random(1,9999)
-    local Data = "UNIT#"..tostring(i)
-    Quadtree:Insert(POINT:New(lat, lon, Data))
-  end
-  
-  for i=1, RemoveNumber do
-    local lat = math.random(101,9899)
-    local lon = math.random(101,9899)
-    local Data = "SpecialUnit"
-    Quadtree:Insert(POINT:New(lat, lon, Data))
-    
-    local Time = os.clock()
-    Quadtree:Remove(POINT:New(lat + math.random(0, 20) - 10, lon + math.random(0, 20) - 10 , "SpecialUnit"))
-    AccTime = AccTime + os.clock() - Time
-  end
-  print(string.format("%.3f", AccTime))
-end 
+
 
 function QuadtreeTestFind(Quadtree, Size, FindNumber)
   local AccTime = 0

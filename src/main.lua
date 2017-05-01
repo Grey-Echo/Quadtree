@@ -17,7 +17,7 @@ function POINT:New(X, Y, Data)
   self.X = X
   self.Y = Y
   self.Data = Data
-  --print("New Point : "..self.X..", "..self.Y..", "..self.Data)
+  print("New Point : "..self.X..", "..self.Y..", "..self.Data)
   return self
 end
 
@@ -187,13 +187,13 @@ function QUADTREE:Find(Point)
   
     if CurrentNode.Point then
       if CurrentNode.Point.Data == Point.Data then
-        --print("Unit found. Search Depth : "..i)
+        -- print("Unit found. Search Depth : "..i)
         return CurrentNode
       end
     end 
     
     if not CurrentNode.Node_SE then
-      --print("Unit not found. Search Depth : "..i)
+      -- print("Unit not found. Search Depth : "..i)
       break
     end
     
@@ -218,7 +218,7 @@ function QUADTREE:Find(Point)
   -- so we need to walk back the tree, comparing the Point to any Point found in the Tree.
   -- This should be still efficient, as Units usually don't move too much too fast
   -- This will be very inefficient if the UNIT is an OVNI, moving at light speed
-  --print("Unit moved, searching around...")
+  -- print("Unit moved, searching around...")
   
   local PotentialUnits = {}
   local PotentialUnitsSize
@@ -245,7 +245,7 @@ function QUADTREE:Find(Point)
       for i=1, PotentialUnitsSize do
         
         if PotentialUnits[i].Data == Point.Data then
-          print(Radius)
+          -- print("Unit Found ! Radius : "..tostring(Radius))
           return PotentialUnits[i]
         end
       end
@@ -298,67 +298,10 @@ function QUADTREE:Find(Point)
   
 end
 
-function QUADTREE:_Remove(Node, ParentNode, Quadrant)
-  if Node.Node_SE then
-    ParentNode[Quadrant] = Node.Node_SE
-    Node.Node_Parent = ParentNode
-  elseif Node.Node_NE then
-    ParentNode[Quadrant] = Node.Node_NE
-    Node.Node_Parent = ParentNode
-  elseif Node.Node_NW then
-    ParentNode[Quadrant] = Node.Node_NW
-    Node.Node_Parent = ParentNode
-  elseif Node.Node_SW then
-    ParentNode[Quadrant] = Node.Node_SW
-    Node.Node_Parent = ParentNode
-  else
-    ParentNode[Quadrant] = NODE:New(ParentNode[Quadrant].BoundingBox, ParentNode)
-  end
-end
-
 function QUADTREE:Remove(Point)
-  local CurrentNode = self:Find(Point)
+  local Node = self:Find(Point)
   
-  if not CurrentNode then
-    return nil
-  end
-
-  if not CurrentNode.Node_Previous then
-    CurrentNode.Point = nil
-    return true
-  end
-  
-  local ParentNode = CurrentNode.Node_Previous
-  local ParentQuadrant
-  
-  if ParentNode.Node_SE then
-    if ParentNode.Node_SE.Point then
-      if ParentNode.Node_SE.Point.Data == CurrentNode.Point.Data then
-        self:_Remove(CurrentNode, ParentNode, "Node_SE")
-      end
-    end
-  end
-  if ParentNode.Node_NE then
-    if ParentNode.Node_NE.Point then
-      if ParentNode.Node_NE.Point.Data == CurrentNode.Point.Data then
-        self:_Remove(CurrentNode, ParentNode, "Node_NE")
-      end
-    end
-  end
-  if ParentNode.Node_NW then
-    if ParentNode.Node_NW.Point then
-      if ParentNode.Node_NW.Point.Data == CurrentNode.Point.Data then
-        self:_Remove(CurrentNode, ParentNode, "Node_NW")
-      end
-    end
-  end
-  if ParentNode.Node_SW then
-    if ParentNode.Node_SW.Point then
-      if ParentNode.Node_SW.Point.Data == CurrentNode.Point.Data then
-        self:_Remove(CurrentNode, ParentNode, "Node_SW")
-      end
-    end
-  end
+  Node.Point = nil
 end
 
 function QUADTREE:NearestNeighbour(Point)
@@ -584,18 +527,19 @@ math.randomseed(os.time())
 profiler = newProfiler()
 profiler:start()
 --]]
---[[
+---[[
 -- Quadtree tests
 for i=1, 20 do
   local MyQuadtree = QUADTREE:New(BOUNDING_BOX:New(0, 0, 10000, 10000))
   
-  QuadtreeTestInsert(MyQuadtree, 100000, 10000)
+  
+  QuadtreeTestRemove(MyQuadtree, 10000, 10000, 0)
+  -- QuadtreeTestInsert(MyQuadtree, 10000, 1000)
 
-  -- MyQuadtree:Print()
   collectgarbage(collect)
 end
 --]]
----[[
+--[[
 -- Array tests
 for i=1, 20 do
   local Array = {}
