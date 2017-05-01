@@ -1,0 +1,7 @@
+Lua Profile output created by profiler.lua. Copyright Pepperfish 2002+
+
+
+
+Total time spent in profiled functions:     0s
+
+END
