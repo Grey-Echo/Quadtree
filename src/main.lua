@@ -17,7 +17,7 @@ function POINT:New(X, Y, Data)
   self.X = X
   self.Y = Y
   self.Data = Data
-  --print("New Point : "..self.X..", "..self.Y..", "..self.Data)
+  -- print("New Point : "..self.X..", "..self.Y..", "..self.Data)
   return self
 end
 
@@ -146,7 +146,6 @@ function NODE:Insert(Point)
   if self.Node_NE:Insert(Point) then return true end
   if self.Node_NW:Insert(Point) then return true end
   if self.Node_SW:Insert(Point) then return true end
-  
   --print("The POINT didn't fit in any of the subdivisions")
 end
 
@@ -233,7 +232,7 @@ function QUADTREE:Find(Point)
     
     -- print("Search radius : "..tostring(Radius))
     
-    PotentialUnits = self:PointsInCircle(CurrentNode.Point, Radius)
+    PotentialUnits = self:_NodesInCircle(CurrentNode.Point, Radius)
     PotentialUnitsSize = table.getn(PotentialUnits)
     
     if PotentialUnitsSize > 0 then
@@ -244,7 +243,7 @@ function QUADTREE:Find(Point)
     
       for i=1, PotentialUnitsSize do
         
-        if PotentialUnits[i].Data == Point.Data then
+        if PotentialUnits[i].Point.Data == Point.Data then
           -- print("Unit Found ! Radius : "..tostring(Radius))
           return PotentialUnits[i]
         end
@@ -299,9 +298,22 @@ function QUADTREE:Find(Point)
 end
 
 function QUADTREE:Remove(Point)
+  -- print("Remove Point : "..tostring(Point.Data))
   local Node = self:Find(Point)
   
   Node.Point = nil
+end
+
+function QUADTREE:Update(Point)
+  -- print("Update Point : "..tostring(Point.Data))
+  local Node = self:Find(Point)
+  
+  if Node.BoundingBox:ContainPoint(Point) then
+    Node.Point = Point
+  else
+    Node.Point = nil
+    self:Insert(Point)
+  end
 end
 
 function QUADTREE:NearestNeighbour(Point)
@@ -454,11 +466,11 @@ function QUADTREE:ExistingPointNearestNeighbour(Point)
   return NearestNeighbour
 end
 
-function QUADTREE:PointsInCircle(Center, Radius)
+function QUADTREE:_NodesInCircle(Center, Radius)
   local Stack = {self}
   local CurrentNode
   local CurrentDist
-  local PointsInCircle = {}
+  local NodesInCircle = {}
   local i = 0
   
   while true do
@@ -477,7 +489,7 @@ function QUADTREE:PointsInCircle(Center, Radius)
         if CurrentNode.Node_SE.Point then
         CurrentDist = Center:Distance(CurrentNode.Node_SE.Point)
           if CurrentDist < Radius then
-            table.insert(PointsInCircle, CurrentNode.Node_SE.Point)
+            table.insert(NodesInCircle, CurrentNode.Node_SE)
           end 
         end
       end
@@ -487,7 +499,7 @@ function QUADTREE:PointsInCircle(Center, Radius)
         if CurrentNode.Node_NE.Point then
         CurrentDist = Center:Distance(CurrentNode.Node_NE.Point)
           if CurrentDist < Radius then
-            table.insert(PointsInCircle, CurrentNode.Node_NE.Point)
+            table.insert(NodesInCircle, CurrentNode.Node_NE)
           end 
         end
       end
@@ -497,7 +509,7 @@ function QUADTREE:PointsInCircle(Center, Radius)
         if CurrentNode.Node_NW.Point then
         CurrentDist = Center:Distance(CurrentNode.Node_NW.Point)
           if CurrentDist < Radius then
-            table.insert(PointsInCircle, CurrentNode.Node_NW.Point)
+            table.insert(NodesInCircle, CurrentNode.Node_NW)
           end 
         end
       end
@@ -507,14 +519,14 @@ function QUADTREE:PointsInCircle(Center, Radius)
         if CurrentNode.Node_SW.Point then
         CurrentDist = Center:Distance(CurrentNode.Node_SW.Point)
           if CurrentDist < Radius then
-            table.insert(PointsInCircle, CurrentNode.Node_SW.Point)
+            table.insert(NodesInCircle, CurrentNode.Node_SW)
           end 
         end
       end
     end
     
   end 
-  return PointsInCircle
+  return NodesInCircle
 end
 
 
@@ -532,8 +544,8 @@ profiler:start()
 for i=1, 20 do
   local MyQuadtree = QUADTREE:New(BOUNDING_BOX:New(0, 0, 10000, 10000))
   
-  
-  QuadtreeTestRemove(MyQuadtree, 100000, 10000, "random")
+  QuadtreeTestUpdate(MyQuadtree, 100000, 10000, "random")
+  -- QuadtreeTestRemove(MyQuadtree, 100000, 10000, 0)
   -- QuadtreeTestInsert(MyQuadtree, 10000, 1000)
 
   collectgarbage(collect)

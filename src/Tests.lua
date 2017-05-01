@@ -27,9 +27,10 @@ function QuadtreeTestInsert(Quadtree, Size, InsertNumber)
   
 
   InsertNumber = InsertNumber + Size
+  Size = Size + 1
 
   for i=Size, InsertNumber do
-    local Data = "SpecialUnit#"..tostring(i-Size+1)
+    local Data = "SpecialUnit#"..tostring(i-Size)
     local Time = os.clock()
     Quadtree:Insert(RandomPoint(math.random(1,9999), math.random(1,9999), Data, 0))
     AccTime = AccTime + os.clock() - Time
@@ -45,6 +46,7 @@ function QuadtreeTestRemove(Quadtree, Size, RemoveNumber, Disp)
   QuadtreeFill(Quadtree, Size)
   
   RemoveNumber = RemoveNumber + Size
+  Size = Size + 1
   
   for i=Size, RemoveNumber do
     if type(Disp) == "string" then
@@ -66,6 +68,37 @@ function QuadtreeTestRemove(Quadtree, Size, RemoveNumber, Disp)
   end
   print(string.format("%.3f", AccTime))
 end 
+
+function QuadtreeTestUpdate(Quadtree, Size, RemoveNumber, Disp)
+  local AccTime = 0
+  local lat
+  local lon
+  QuadtreeFill(Quadtree, Size)
+  
+  RemoveNumber = RemoveNumber + Size
+  Size = Size + 1
+  
+  for i=Size, RemoveNumber do
+    if type(Disp) == "string" then
+      Disp = 0
+      lat = math.random(1,9999)
+      lon = math.random(1,9999)
+      Quadtree:Insert(RandomPoint(lat, lon, "SpecialUnit", 0))
+      lat = math.random(1,9999)
+      lon = math.random(1,9999)
+    else
+      lat = math.random(1+Disp,9999-Disp)
+      lon = math.random(1+Disp,9999-Disp)
+      Quadtree:Insert(RandomPoint(lat, lon, "SpecialUnit", 0))
+    end
+
+    local Time = os.clock()
+    Quadtree:Update(RandomPoint(lat, lon, "SpecialUnit", Disp))
+    AccTime = AccTime + os.clock() - Time
+    Quadtree:Remove(RandomPoint(lat, lon, "SpecialUnit", 0))
+  end
+  print(string.format("%.3f", AccTime))
+end 
 -----------------------------------------------------------------------------
 -- Array Tests
 -----------------------------------------------------------------------------
@@ -74,9 +107,10 @@ function ArrayTestInsert(Array, Size, InsertNumber)
   ArrayFill(Array, Size)
   
   InsertNumber = InsertNumber + Size
+  Size = Size + 1
   
   for i=Size, InsertNumber do
-    local Data = "SpecialUnit#"..tostring(i-Size+1)
+    local Data = "SpecialUnit#"..tostring(i-Size)
     local Time = os.clock()
     table.insert(Array, RandomPoint(math.random(1,9999), math.random(1,9999), Data, 0))
     AccTime = AccTime + os.clock() - Time
