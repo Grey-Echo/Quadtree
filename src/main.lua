@@ -17,7 +17,7 @@ function POINT:New(X, Y, Data)
   self.X = X
   self.Y = Y
   self.Data = Data
-  -- print("New Point : "..self.X..", "..self.Y..", "..self.Data)
+  --print("New Point : "..self.X..", "..self.Y..", "..self.Data)
   return self
 end
 
@@ -180,6 +180,7 @@ function QUADTREE:Print()
 end
 
 function QUADTREE:Find(Point)
+  --print("Searching")
   local CurrentNode = self
   local i = 0
   while true do
@@ -187,6 +188,7 @@ function QUADTREE:Find(Point)
     if CurrentNode.Point then
       if CurrentNode.Point.Data == Point.Data then
         -- print("Unit found. Search Depth : "..i)
+        -- print("0")
         return CurrentNode
       end
     end 
@@ -232,12 +234,12 @@ function QUADTREE:Find(Point)
     
     -- print("Search radius : "..tostring(Radius))
     
-    PotentialUnits = self:_NodesInCircle(CurrentNode.Point, Radius)
+    PotentialUnits = self:NodesInCircle(CurrentNode.Point, Radius)
     PotentialUnitsSize = table.getn(PotentialUnits)
     
     if PotentialUnitsSize > 0 then
       
-      if PotentialUnitsSize >= 1E12 then
+      if PotentialUnitsSize >= 1E12 then -- @TODO Compare the size of the array with the number of units
         return nil
       end
     
@@ -245,6 +247,7 @@ function QUADTREE:Find(Point)
         
         if PotentialUnits[i].Point.Data == Point.Data then
           -- print("Unit Found ! Radius : "..tostring(Radius))
+          -- print(Radius)
           return PotentialUnits[i]
         end
       end
@@ -298,6 +301,7 @@ function QUADTREE:Find(Point)
 end
 
 function QUADTREE:Remove(Point)
+  --print("Removing")
   -- print("Remove Point : "..tostring(Point.Data))
   local Node = self:Find(Point)
   
@@ -466,7 +470,7 @@ function QUADTREE:ExistingPointNearestNeighbour(Point)
   return NearestNeighbour
 end
 
-function QUADTREE:_NodesInCircle(Center, Radius)
+function QUADTREE:NodesInCircle(Center, Radius)
   local Stack = {self}
   local CurrentNode
   local CurrentDist
@@ -544,8 +548,10 @@ profiler:start()
 for i=1, 20 do
   local MyQuadtree = QUADTREE:New(BOUNDING_BOX:New(0, 0, 10000, 10000))
   
-  QuadtreeTestUpdate(MyQuadtree, 100000, 10000, "random")
-  -- QuadtreeTestRemove(MyQuadtree, 100000, 10000, 0)
+  QuadtreeTestInZone(MyQuadtree, 200, 1000, "random")
+  -- QuadtreeTestFind(MyQuadtree, 100000, 1, "random")
+  -- QuadtreeTestUpdate(MyQuadtree, 100000, 1, "random")
+  -- QuadtreeTestRemove(MyQuadtree, 100000, 1, "random")
   -- QuadtreeTestInsert(MyQuadtree, 10000, 1000)
 
   collectgarbage(collect)
