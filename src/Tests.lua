@@ -176,6 +176,8 @@ function QuadtreeTestInZone(Quadtree, Size, SearchNumber, Radius)
   end
   print(string.format("%.3f", AccTime))
 end 
+
+
 -----------------------------------------------------------------------------
 -- Array Tests
 -----------------------------------------------------------------------------
@@ -195,34 +197,28 @@ function ArrayTestInsert(Array, Size, InsertNumber)
   print(string.format("%.3f", AccTime))
 end
 
---[[
 
 
-
-
-
-function ArrayTestRemove(TestArray, ArraySize, RemoveNumber)
+function ArrayTestRemove(Array, Size, RemoveNumber)
   local AccTime = 0
-  for i=1, ArraySize do
-    local lat = math.random(1,9999)
-    local lon = math.random(1,9999)
-    local Data = "UNIT#"..tostring(i)
-    table.insert(TestArray, POINT:New(lat, lon, Data))
-  end
+  ArrayFill(Array, Size)
   
-  for i=ArraySize+1, ArraySize+1+RemoveNumber do
+  RemoveNumber = RemoveNumber + Size
+  Size = Size + 1
+  
+  for i=Size, RemoveNumber do
     local lat = math.random(1,9999)
     local lon = math.random(1,9999)
-    local Data = "UNITAdd+"..tostring(i)
-    table.insert(TestArray, POINT:New(lat, lon, Data))
+    local Data = "SpecialUnit"
+    table.insert(Array, math.random(1,9999), POINT:New(lat, lon, Data))
     local Time = os.clock()
-    for i=1, ArraySize + 1 do
-      if TestArray[i].Data == Data then
-        table.remove(TestArray, i )
+    for i=1, Size-1 do
+      if Array[i].Data == "SpecialUnit" then
+        table.remove(Array, i )
+        break
       end
     end
     AccTime = AccTime + os.clock() - Time
   end
   print(string.format("%.3f", AccTime))
 end
---]]
