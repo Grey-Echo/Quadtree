@@ -157,13 +157,15 @@ function QuadtreeTestInZone(Quadtree, Size, SearchNumber, Radius)
   QuadtreeFill(Quadtree, Size)
   
   if type(Radius) == "string" then
-    Radius = math.random(1,2000)
-    lat = math.random(1+Radius,9999-Radius)
-    lon = math.random(1+Radius,9999-Radius)
+    for i=1, SearchNumber do
+      Radius = math.random(1,2000)
+      lat = math.random(1+Radius,9999-Radius)
+      lon = math.random(1+Radius,9999-Radius)
     
-    local Time = os.clock()
-    Quadtree:NodesInCircle(RandomPoint(lat, lon, "", 0), Radius)
-    AccTime = AccTime + os.clock() - Time
+      local Time = os.clock()
+      Quadtree:NodesInCircle(RandomPoint(lat, lon, "", 0), Radius)
+      AccTime = AccTime + os.clock() - Time
+    end
   else
     for i=1, SearchNumber do
       lat = math.random(1+Radius,9999-Radius)
@@ -194,6 +196,7 @@ function ArrayTestInsert(Array, Size, InsertNumber)
     table.insert(Array, RandomPoint(math.random(1,9999), math.random(1,9999), Data, 0))
     AccTime = AccTime + os.clock() - Time
   end
+  
   print(string.format("%.3f", AccTime))
 end
 
@@ -210,7 +213,8 @@ function ArrayTestRemove(Array, Size, RemoveNumber)
     local lat = math.random(1,9999)
     local lon = math.random(1,9999)
     local Data = "SpecialUnit"
-    table.insert(Array, math.random(1,9999), POINT:New(lat, lon, Data))
+    local Place = math.random(1,Size)
+    table.insert(Array, Place, POINT:New(lat, lon, Data))
     local Time = os.clock()
     for i=1, Size-1 do
       if Array[i].Data == "SpecialUnit" then
@@ -219,6 +223,114 @@ function ArrayTestRemove(Array, Size, RemoveNumber)
       end
     end
     AccTime = AccTime + os.clock() - Time
+  end
+  print(string.format("%.3f", AccTime))
+end
+
+
+function ArrayTestUpdate(Array, Size, UpdateNumber)
+  local AccTime = 0
+  ArrayFill(Array, Size)
+  
+  UpdateNumber = UpdateNumber + Size
+  Size = Size + 1
+  
+  for i=Size, UpdateNumber do
+    local lat = math.random(1,9999)
+    local lon = math.random(1,9999)
+    local Data = "SpecialUnit"
+    local Place = math.random(1,Size)
+    table.insert(Array, Place, POINT:New(lat, lon, Data))
+    local Time = os.clock()
+    for i=1, Size-1 do
+      if Array[i].Data == "SpecialUnit" then
+        local TempPoint = Array[i]
+        table.remove(Array, i )
+        table.insert(Array,TempPoint)
+        break
+      end
+    end
+    AccTime = AccTime + os.clock() - Time
+    for i=1, Size-1 do
+      if Array[i].Data == "SpecialUnit" then
+        table.remove(Array, i )
+        break
+      end
+    end
+  end
+  print(string.format("%.3f", AccTime))
+end
+
+
+function ArrayTestSearch(Array, Size, SearchNumber)
+  local AccTime = 0
+  ArrayFill(Array, Size)
+  
+  SearchNumber = SearchNumber + Size
+  Size = Size + 1
+  
+  for i=Size, SearchNumber do
+    local lat = math.random(1,9999)
+    local lon = math.random(1,9999)
+    local Data = "SpecialUnit"
+    local Place = math.random(1,Size)
+    table.insert(Array, Place, POINT:New(lat, lon, Data))
+    local Time = os.clock()
+    for i=1, Size-1 do
+      if Array[i].Data == "SpecialUnit" then
+        break
+      end
+    end
+    for i=1, Size-1 do
+      if Array[i].Data == "SpecialUnit" then
+        table.remove(Array, i )
+        break
+      end
+    end
+    AccTime = AccTime + os.clock() - Time
+  end
+  print(string.format("%.3f", AccTime))
+end
+
+
+function ArrayTestInZone(Array, Size, SearchNumber, Radius)
+  local AccTime = 0
+  ArrayFill(Array, Size)
+  
+  if type(Radius) == "string" then
+    for i=1, SearchNumber do
+      Radius = math.random(1,2000)
+      lat = math.random(1+Radius,9999-Radius)
+      lon = math.random(1+Radius,9999-Radius)
+    
+      local Time = os.clock()
+      local ComputedSize = table.getn(Array)
+      local SearchPoint = POINT:New(lat, lon, "")
+      local SearchResults = {}
+      for i = 1, ComputedSize do
+        if Array[i]:Distance(SearchPoint) < Radius then
+          table.insert(SearchResults, Array[i])
+        end
+      end 
+      AccTime = AccTime + os.clock() - Time
+    end
+  else
+    for i=1, SearchNumber do
+      lat = math.random(1+Radius,9999-Radius)
+      lon = math.random(1+Radius,9999-Radius)
+    
+      local Time = os.clock()
+      local ComputedSize = table.getn(Array)
+      local SearchPoint = POINT:New(lat, lon, "")
+      local SearchResults = {}
+      for i = 1, ComputedSize do
+        if SearchPoint:Distance(Array[i]) < Radius then
+          table.insert(SearchResults, Array[i])
+        end
+      end 
+      AccTime = AccTime + os.clock() - Time
+      SearchResults = {}
+    end
   end
   print(string.format("%.3f", AccTime))
 end

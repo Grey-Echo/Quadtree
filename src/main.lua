@@ -543,12 +543,12 @@ math.randomseed(os.time())
 profiler = newProfiler()
 profiler:start()
 --]]
---[[
+---[[
 -- Quadtree tests
 for i=1, 20 do
   local MyQuadtree = QUADTREE:New(BOUNDING_BOX:New(0, 0, 10000, 10000))
   
-  QuadtreeTestInZone(MyQuadtree, 200, 1000, "random")
+  QuadtreeTestInZone(MyQuadtree, 200, 50, "random")
   -- QuadtreeTestFind(MyQuadtree, 100000, 1, "random")
   -- QuadtreeTestUpdate(MyQuadtree, 100000, 1, "random")
   -- QuadtreeTestRemove(MyQuadtree, 100000, 1, "random")
@@ -557,12 +557,15 @@ for i=1, 20 do
   collectgarbage(collect)
 end
 --]]
----[[
+--[[
 -- Array tests
 for i=1, 20 do
   local Array = {}
-  --ArrayTestInsert(Array, 10000, 1000)
-  ArrayTestRemove(Array, 100000, 1000)
+  -- ArrayTestInsert(Array, 10000, 1000)
+  -- ArrayTestRemove(Array, 100000, 1000)
+  -- ArrayTestUpdate(Array, 100000, 1000)
+  -- ArrayTestSearch(Array, 100000, 1000)
+  ArrayTestInZone(Array, 200, 50, "random")
 end
 --]]
 --[[
