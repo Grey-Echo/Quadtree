@@ -125,30 +125,6 @@ function NODE:_Subdivide()
   return self
 end
 
-function NODE:Insert(Point)
-  if not self.BoundingBox:ContainPoint(Point) then
-    --print("Point "..Point.Data.." does not fit in this Quadtree")
-    return false
-  end
-  
-  if self.Point == nil then
-    --print("Point "..Point.Data.." added to this Quadtree")
-    self.Point = Point
-    return true
-  end
-  
-  --print("There is already a POINT here, need to subdivide !")
-  if self.Node_SE == nil then
-    self:_Subdivide()
-  end
-  
-  if self.Node_SE:Insert(Point) then return true end
-  if self.Node_NE:Insert(Point) then return true end
-  if self.Node_NW:Insert(Point) then return true end
-  if self.Node_SW:Insert(Point) then return true end
-  --print("The POINT didn't fit in any of the subdivisions")
-end
-
 --- @type QUADTREE
 QUADTREE = {}
 
@@ -157,6 +133,36 @@ function QUADTREE:New(BoundingBox)
   self.Node_Previous = nil
   return self
 end
+
+
+function QUADTREE:Insert(Point)
+  local CurrentNode = self
+  
+  while true do
+    --[[if not self.BoundingBox:ContainPoint(Point) then
+      --print("Point "..Point.Data.." does not fit in this Quadtree")
+      return false
+    end--]]
+  
+    if CurrentNode.Point == nil then
+      --print("Point "..Point.Data.." added to this Quadtree")
+      CurrentNode.Point = Point
+      return true
+    end
+  
+    --print("There is already a POINT here, need to subdivide !")
+    if CurrentNode.Node_SE == nil then
+      CurrentNode:_Subdivide()
+    end
+  
+    if CurrentNode.Node_SE.BoundingBox:ContainPoint(Point) then CurrentNode = CurrentNode.Node_SE
+    elseif CurrentNode.Node_NE.BoundingBox:ContainPoint(Point) then CurrentNode = CurrentNode.Node_NE
+    elseif CurrentNode.Node_NW.BoundingBox:ContainPoint(Point) then CurrentNode = CurrentNode.Node_NW
+    elseif CurrentNode.Node_SW.BoundingBox:ContainPoint(Point) then CurrentNode = CurrentNode.Node_SW end
+    --print("The POINT didn't fit in any of the subdivisions")
+  end
+end
+
 
 function QUADTREE:Print()
   local Queue = {self}
@@ -548,11 +554,11 @@ profiler:start()
 for i=1, 20 do
   local MyQuadtree = QUADTREE:New(BOUNDING_BOX:New(0, 0, 10000, 10000))
   
-  QuadtreeTestInZone(MyQuadtree, 200, 50, "random")
+  -- QuadtreeTestInZone(MyQuadtree, 200, 50, "random")
   -- QuadtreeTestFind(MyQuadtree, 100000, 1, "random")
   -- QuadtreeTestUpdate(MyQuadtree, 100000, 1, "random")
   -- QuadtreeTestRemove(MyQuadtree, 100000, 1, "random")
-  -- QuadtreeTestInsert(MyQuadtree, 10000, 1000)
+  QuadtreeTestInsert(MyQuadtree, 100000, 10)
 
   collectgarbage(collect)
 end
