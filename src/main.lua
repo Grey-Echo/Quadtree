@@ -35,17 +35,8 @@ function BOUNDING_BOX:New(X, Y, W, H)
 end
 
 function BOUNDING_BOX:ContainPoint(Point)
-  -- This is designed to fail fast. That's why it looks like that !
-  if Point.X > self.X then
-    if Point.X <= self.W + self.X then
-      if Point.Y > self.Y then
-        if Point.Y <= self.H + self.Y then
-          return true
-        end
-      end
-    end
-  end
-  return false
+  -- This makes use of lua's lazy operator. The order is important !
+  return Point.X > self.X and Point.Y > self.Y and Point.X <= self.W + self.X and Point.Y <= self.H + self.Y
 end
 
 -- Check if a circle intercept with the bounding box. The center of the circle must be a POINT
@@ -208,29 +199,24 @@ function QUADTREE:Find(Point)
   local PotentialUnitsSize
   local PreviousSize
   local Radius = 100
+  local RadiusStep = math.ceil((1/self.DataStored) * 1E6)
   
   while not CurrentNode.Point do
     CurrentNode = CurrentNode.Node_Previous
   end
   
   while true do
-    
     -- print("Search radius : "..tostring(Radius))
     
     PotentialUnits = self:NodesInCircle(CurrentNode.Point, Radius)
     PotentialUnitsSize = table.getn(PotentialUnits)
     
-    if PotentialUnitsSize > 0 then
-      
-      if PotentialUnitsSize >= 1E12 then -- @TODO Compare the size of the array with the number of units
-        return nil
-      end
+    if PotentialUnitsSize > 0 then      
+      if self.DataStored == PotentialUnitsSize then return nil end
     
-      for i=1, PotentialUnitsSize do
-        
+      for i=1, PotentialUnitsSize do        
         if PotentialUnits[i].Point.Data == Point.Data then
           -- print("Unit Found ! Radius : "..tostring(Radius))
-          -- print(Radius)
           return PotentialUnits[i]
         end
       end
@@ -238,10 +224,8 @@ function QUADTREE:Find(Point)
       PreviousSize = PotentialUnitsSize 
     end
     
-    Radius = Radius + 100 -- @TODO: This needs to be dynamic, depending on the number of units are stored
-     
+    Radius = Radius + RadiusStep    
   end
-  
 end
 
 function QUADTREE:Remove(Point)
@@ -495,10 +479,10 @@ for i=1, 20 do
   local MyQuadtree = QUADTREE:New(BOUNDING_BOX:New(0, 0, 10000, 10000))
   
   -- QuadtreeTestInZone(MyQuadtree, 200, 50, "random")
-  -- QuadtreeTestFind(MyQuadtree, 100000, 1, "random")
+  QuadtreeTestFind(MyQuadtree, 100, 1, 200)
   -- QuadtreeTestUpdate(MyQuadtree, 100000, 1, "random")
   -- QuadtreeTestRemove(MyQuadtree, 100000, 1, "random")
-  QuadtreeTestInsert(MyQuadtree, 10000, 10)
+  -- QuadtreeTestInsert(MyQuadtree, 10000, 10)
 
   collectgarbage(collect)
 end

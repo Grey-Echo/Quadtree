@@ -123,15 +123,14 @@ function QuadtreeTestFind(Quadtree, Size, FindNumber, Disp)
   
   if type(Disp) == "string" then
     for i=Size, FindNumber do
-      Disp = 0
       Quadtree:Insert(RandomPoint(math.random(1,9999), math.random(1,9999), "SpecialUnit", 0))
       
       lat = math.random(1,9999)
       lon = math.random(1,9999)
       local Time = os.clock()
-      Quadtree:Find(RandomPoint(lat, lon, "SpecialUnit", Disp))
+      Quadtree:Find(RandomPoint(lat, lon, "SpecialUnit", 0))
       AccTime = AccTime + os.clock() - Time
-      Quadtree:Remove(RandomPoint(lat, lon, "SpecialUnit", Disp))
+      Quadtree:Remove(RandomPoint(lat, lon, "SpecialUnit", 0))
     end
   else
     for i=Size, FindNumber do
@@ -142,7 +141,7 @@ function QuadtreeTestFind(Quadtree, Size, FindNumber, Disp)
       local Time = os.clock()
       Quadtree:Find(RandomPoint(lat, lon, "SpecialUnit", Disp))
       AccTime = AccTime + os.clock() - Time
-      Quadtree:Remove(RandomPoint(lat, lon, "SpecialUnit", Disp))
+      Quadtree:Remove(RandomPoint(lat, lon, "SpecialUnit", 0))
     end
   end
   print(string.format("%.3f", AccTime))
