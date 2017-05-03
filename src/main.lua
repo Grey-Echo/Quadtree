@@ -31,6 +31,9 @@ function BOUNDING_BOX:New(X, Y, W, H)
   self.Y = Y
   self.W = W
   self.H = H
+  -- We store the half width and the half height, so we don't have to calculate them later
+  self.HalfW = W/2
+  self.HalfH = H/2
   return self
 end
 
@@ -44,27 +47,22 @@ end
 function BOUNDING_BOX:Intersect(CircleCenter, CircleRadius)
   -- This is not cool for the programer, but very optimized... sorry :)
 
-  local HalfW = self.W/2
-  local HalfH = self.H/2
-
-  local cx = math.abs(CircleCenter.X - self.X - HalfW)
-  local xDist = HalfW + CircleRadius 
+  local cx = math.abs(CircleCenter.X - self.X - self.HalfW)
+  local xDist = self.HalfW + CircleRadius 
   if (cx > xDist) then return false end
   
-  local cy = math.abs(CircleCenter.Y - self.Y - HalfH)
-  local yDist = HalfH + CircleRadius
+  local cy = math.abs(CircleCenter.Y - self.Y - self.HalfH)
+  local yDist = self.HalfH + CircleRadius
   if (cy > yDist) then return false end
   
-  if (cx <= HalfW or cy <= HalfH) then return true end
+  if (cx <= self.HalfW or cy <= self.HalfH) then return true end
   
-  
-  local xCornerDist = cx - HalfW
-  local yCornerDist = cy - HalfH
+  local xCornerDist = cx - self.HalfW
+  local yCornerDist = cy - self.HalfH
   local xCornerDistSq = xCornerDist * xCornerDist
   local yCornerDistSq = yCornerDist * yCornerDist
   local maxCornerDistSq = CircleRadius * CircleRadius
   return xCornerDistSq + yCornerDistSq <= maxCornerDistSq
-
 end
 
 --- @type NODE
@@ -80,15 +78,12 @@ end
 
 -- Adds its children to a Node
 function NODE:_Subdivide()
-  local X = self.BoundingBox.X
-  local Y = self.BoundingBox.Y
-  local W = self.BoundingBox.W
-  local H = self.BoundingBox.H
+  -- Sorry... less CPU cycles this way
 
-  self.Node_SE = NODE:New(BOUNDING_BOX:New(X, Y, W/2, H/2), self)
-  self.Node_NE = NODE:New(BOUNDING_BOX:New(X, Y + H/2, W/2, H/2), self)
-  self.Node_NW = NODE:New(BOUNDING_BOX:New(X + W/2, Y + H/2, W/2, H/2), self)
-  self.Node_SW = NODE:New(BOUNDING_BOX:New(X + W/2, Y, W/2, H/2), self)
+  self.Node_SE = NODE:New(BOUNDING_BOX:New(self.BoundingBox.X, self.BoundingBox.Y, self.BoundingBox.HalfW, self.BoundingBox.HalfH), self)
+  self.Node_NE = NODE:New(BOUNDING_BOX:New(self.BoundingBox.X, self.BoundingBox.Y + self.BoundingBox.HalfH, self.BoundingBox.HalfW, self.BoundingBox.HalfH), self)
+  self.Node_NW = NODE:New(BOUNDING_BOX:New(self.BoundingBox.X + self.BoundingBox.HalfW, self.BoundingBox.Y + self.BoundingBox.HalfH, self.BoundingBox.HalfW, self.BoundingBox.HalfH), self)
+  self.Node_SW = NODE:New(BOUNDING_BOX:New(self.BoundingBox.X + self.BoundingBox.HalfW, self.BoundingBox.Y, self.BoundingBox.HalfW, self.BoundingBox.HalfH), self)
   return self
 end
 
@@ -250,6 +245,8 @@ function QUADTREE:Update(Point)
 end
 
 -- I should totally find a way to merge this one with ExistingPointNearestNeighbour...
+-- The difference is that in this function, if the neirest neighboun is an existing point, the function stops and returns this point
+-- In ExistingPointNearestNeighbour, the function woul keep searching for the closest Unit.
 function QUADTREE:NearestNeighbour(Point)
   local Stack = {self}
   local CurrentNode
@@ -403,7 +400,6 @@ end
 function QUADTREE:NodesInCircle(Center, Radius)
   local Stack = {self}
   local CurrentNode
-  local CurrentDist
   local NodesInCircle = {}
   local i = 0
   
@@ -421,8 +417,7 @@ function QUADTREE:NodesInCircle(Center, Radius)
       if CurrentNode.Node_SE.BoundingBox:Intersect(Center, Radius) then
         table.insert(Stack, CurrentNode.Node_SE)
         if CurrentNode.Node_SE.Point then
-        CurrentDist = Center:Distance(CurrentNode.Node_SE.Point)
-          if CurrentDist < Radius then
+          if Center:Distance(CurrentNode.Node_SE.Point) < Radius then
             table.insert(NodesInCircle, CurrentNode.Node_SE)
           end 
         end
@@ -431,8 +426,7 @@ function QUADTREE:NodesInCircle(Center, Radius)
       if CurrentNode.Node_NE.BoundingBox:Intersect(Center, Radius) then
         table.insert(Stack, CurrentNode.Node_NE)
         if CurrentNode.Node_NE.Point then
-        CurrentDist = Center:Distance(CurrentNode.Node_NE.Point)
-          if CurrentDist < Radius then
+          if Center:Distance(CurrentNode.Node_NE.Point) < Radius then
             table.insert(NodesInCircle, CurrentNode.Node_NE)
           end 
         end
@@ -441,8 +435,7 @@ function QUADTREE:NodesInCircle(Center, Radius)
       if CurrentNode.Node_NW.BoundingBox:Intersect(Center, Radius) then
         table.insert(Stack, CurrentNode.Node_NW)
         if CurrentNode.Node_NW.Point then
-        CurrentDist = Center:Distance(CurrentNode.Node_NW.Point)
-          if CurrentDist < Radius then
+          if Center:Distance(CurrentNode.Node_NW.Point) < Radius then
             table.insert(NodesInCircle, CurrentNode.Node_NW)
           end 
         end
@@ -451,8 +444,7 @@ function QUADTREE:NodesInCircle(Center, Radius)
       if CurrentNode.Node_SW.BoundingBox:Intersect(Center, Radius) then
         table.insert(Stack, CurrentNode.Node_SW)
         if CurrentNode.Node_SW.Point then
-        CurrentDist = Center:Distance(CurrentNode.Node_SW.Point)
-          if CurrentDist < Radius then
+          if Center:Distance(CurrentNode.Node_SW.Point) < Radius then
             table.insert(NodesInCircle, CurrentNode.Node_SW)
           end 
         end
@@ -479,7 +471,7 @@ for i=1, 20 do
   local MyQuadtree = QUADTREE:New(BOUNDING_BOX:New(0, 0, 10000, 10000))
   
   -- QuadtreeTestInZone(MyQuadtree, 200, 50, "random")
-  QuadtreeTestFind(MyQuadtree, 100, 1, 200)
+  -- QuadtreeTestFind(MyQuadtree, 100, 1, 200)
   -- QuadtreeTestUpdate(MyQuadtree, 100000, 1, "random")
   -- QuadtreeTestRemove(MyQuadtree, 100000, 1, "random")
   -- QuadtreeTestInsert(MyQuadtree, 10000, 10)
