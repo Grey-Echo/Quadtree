@@ -193,30 +193,34 @@ function QUADTREE:Find(Point)
   local PotentialUnits = {}
   local PotentialUnitsSize
   local PreviousSize
-  local Radius = 100
-  local RadiusStep = math.ceil((1/self.DataStored) * 1E6)
+  -- A lot of science has gone into that !
+  -- The idea is that the more data is stored, the smaller the radius is increased at each step
+  local RadiusStep = math.abs(math.ceil((1/(self.DataStored + 800)) * 1E6))
+  local Radius = RadiusStep
   
   while not CurrentNode.Point do
     CurrentNode = CurrentNode.Node_Previous
   end
-  
+  local j = 0
   while true do
+    j = j+1
     -- print("Search radius : "..tostring(Radius))
     
     PotentialUnits = self:NodesInCircle(CurrentNode.Point, Radius)
+    PreviousSize = PotentialUnitsSize 
     PotentialUnitsSize = table.getn(PotentialUnits)
     
-    if PotentialUnitsSize > 0 then      
-      if self.DataStored == PotentialUnitsSize then return nil end
+    if self.DataStored == PotentialUnitsSize then return nil end
     
+    if PotentialUnitsSize > 0 and PreviousSize ~= PotentialUnitsSize then      
+  
       for i=1, PotentialUnitsSize do        
         if PotentialUnits[i].Point.Data == Point.Data then
           -- print("Unit Found ! Radius : "..tostring(Radius))
+          print(j)
           return PotentialUnits[i]
         end
-      end
-      
-      PreviousSize = PotentialUnitsSize 
+      end 
     end
     
     Radius = Radius + RadiusStep    
@@ -467,14 +471,14 @@ profiler:start()
 --]]
 ---[[
 -- Quadtree tests
-for i=1, 20 do
+for i=1, 1 do
   local MyQuadtree = QUADTREE:New(BOUNDING_BOX:New(0, 0, 10000, 10000))
   
   -- QuadtreeTestInZone(MyQuadtree, 200, 50, "random")
-  -- QuadtreeTestFind(MyQuadtree, 100, 1, 200)
+  QuadtreeTestFind(MyQuadtree, 10, 1000, 200)
   -- QuadtreeTestUpdate(MyQuadtree, 100000, 1, "random")
   -- QuadtreeTestRemove(MyQuadtree, 100000, 1, "random")
-  -- QuadtreeTestInsert(MyQuadtree, 10000, 10)
+  -- QuadtreeTestInsert(MyQuadtree, 10000, 1000)
 
   collectgarbage(collect)
 end
