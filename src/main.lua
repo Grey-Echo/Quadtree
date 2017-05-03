@@ -1,17 +1,10 @@
 require "MooseStuff"
 require "PepperFish"
 
--- My Code Actually Starts Here
-----------------------------------------------------------------------------------------------------------------
-Quadrant = {SE= "SE", NE = "NE",  NW = "NW", SW = "SW"}
-
 --- @type POINT
-POINT = {
-  X,
-  Y,
-  Data
-}
+POINT = {}
 
+-- Instantiate a new POINT, which is a Data (probably going to be a UNIT) embeded into a structure, with its coordinates
 function POINT:New(X, Y, Data)
   local self = BASE:Inherit( self, BASE:New() )
   self.X = X
@@ -21,6 +14,7 @@ function POINT:New(X, Y, Data)
   return self
 end
 
+-- Calculate the distance from the point to an other point
 function POINT:Distance(Point)
   -- This is not cool for the programer, but very optimized... sorry :)
   -- dont use math.pow it is slow af !
@@ -28,13 +22,9 @@ function POINT:Distance(Point)
 end
 
 --- @type BOUNDING_BOX
-BOUNDING_BOX = {
-  X,
-  Y,
-  W,
-  H
-}
+BOUNDING_BOX = {}
 
+-- Instantiate a new BoundingBox. X, Y are the coordinates at the bottom left, and H, W are the width and the Hieght
 function BOUNDING_BOX:New(X, Y, W, H)
   local self = BASE:Inherit( self, BASE:New() )
   self.X = X
@@ -58,6 +48,8 @@ function BOUNDING_BOX:ContainPoint(Point)
   return false
 end
 
+-- Check if a circle intercept with the bounding box. The center of the circle must be a POINT
+-- can be easily changed to take X and Y instead
 function BOUNDING_BOX:Intersect(CircleCenter, CircleRadius)
   -- This is not cool for the programer, but very optimized... sorry :)
 
@@ -85,15 +77,7 @@ function BOUNDING_BOX:Intersect(CircleCenter, CircleRadius)
 end
 
 --- @type NODE
-NODE = {
-  Point = nil,
-  BoundingBox,
-  Node_SE,
-  Node_NE,
-  Node_NW,
-  Node_SW,
-  Node_Previous
-}
+NODE = {}
 
 function NODE:New(BoundingBox, Node_Previous)
   local self = BASE:Inherit( self, BASE:New() )
@@ -103,6 +87,7 @@ function NODE:New(BoundingBox, Node_Previous)
   return self
 end
 
+-- Adds its children to a Node
 function NODE:_Subdivide()
   local X = self.BoundingBox.X
   local Y = self.BoundingBox.Y
@@ -117,7 +102,9 @@ function NODE:_Subdivide()
 end
 
 --- @type QUADTREE
-QUADTREE = {}
+QUADTREE = {
+  DataStored  = 0
+}
 
 function QUADTREE:New(BoundingBox)
   local self = BASE:Inherit( self, NODE:New(BoundingBox) )
@@ -127,13 +114,10 @@ end
 
 
 function QUADTREE:Insert(Point)
+  self.DataStored = self.DataStored + 1
   local CurrentNode = self
   
   while true do
-    --[[if not self.BoundingBox:ContainPoint(Point) then
-      --print("Point "..Point.Data.." does not fit in this Quadtree")
-      return false
-    end--]]
   
     if CurrentNode.Point == nil then
       --print("Point "..Point.Data.." added to this Quadtree")
@@ -154,7 +138,7 @@ function QUADTREE:Insert(Point)
   end
 end
 
-
+-- I need to rework this one. But it is only usefull for debug
 function QUADTREE:Print()
   local Queue = {self}
   
@@ -175,6 +159,8 @@ function QUADTREE:Print()
   end
       
 end
+
+
 
 function QUADTREE:Find(Point)
   --print("Searching")
@@ -255,49 +241,11 @@ function QUADTREE:Find(Point)
     Radius = Radius + 100 -- @TODO: This needs to be dynamic, depending on the number of units are stored
      
   end
-    
-  --[[
-  i=0
-  local Queue = {}
-  local PreviousNode
-  while CurrentNode do
-    i=i+1
-    --print("BFS #"..i)
-    
-    PreviousNode = CurrentNode
-    
-    if not CurrentNode.Node_Previous then break end
-    CurrentNode = CurrentNode.Node_Previous
-    
-    if CurrentNode.Node_SE ~= PreviousNode then table.insert(Queue, CurrentNode.Node_SE) end
-    if CurrentNode.Node_NE ~= PreviousNode then table.insert(Queue, CurrentNode.Node_NE) end
-    if CurrentNode.Node_NW ~= PreviousNode then table.insert(Queue, CurrentNode.Node_NW) end
-    if CurrentNode.Node_SW ~= PreviousNode then table.insert(Queue, CurrentNode.Node_SW) end
-    
-    -- Breadth First Search with CurrentNode as a Root Node, exluding the tree already searched
-    while table.maxn(Queue) > 0 do
-      if Queue[1].Point then
-        if Queue[1].Point.Data == Point.Data then
-          --print("Unit Found !")
-          return Queue[1]
-        end
-      end
-      if Queue[1].Node_SE then
-        table.insert(Queue, Queue[1].Node_SE)
-        table.insert(Queue, Queue[1].Node_NE)
-        table.insert(Queue, Queue[1].Node_NW)
-        table.insert(Queue, Queue[1].Node_SW)
-      end
-      
-      table.remove(Queue, 1)
-    end
-  end
-  return nil
-  ]]--
   
 end
 
 function QUADTREE:Remove(Point)
+  self.DataStored = self.DataStored-1
   --print("Removing")
   -- print("Remove Point : "..tostring(Point.Data))
   local Node = self:Find(Point)
@@ -317,6 +265,7 @@ function QUADTREE:Update(Point)
   end
 end
 
+-- I should totally find a way to merge this one with ExistingPointNearestNeighbour...
 function QUADTREE:NearestNeighbour(Point)
   local Stack = {self}
   local CurrentNode
