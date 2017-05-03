@@ -44,7 +44,8 @@ function BOUNDING_BOX:New(X, Y, W, H)
   return self
 end
 
-function BOUNDING_BOX:ContainPoint(Point) -- @TODO : Optimize this shit to death
+function BOUNDING_BOX:ContainPoint(Point)
+  -- This is designed to fail fast. That's why it looks like that !
   if Point.X > self.X then
     if Point.X <= self.W + self.X then
       if Point.Y > self.Y then
@@ -83,20 +84,6 @@ function BOUNDING_BOX:Intersect(CircleCenter, CircleRadius)
 
 end
 
-function BOUNDING_BOX:GetNewQuadrants()
-  local X = self.X
-  local Y = self.Y
-  local W = self.W
-  local H = self.H
-  local BoundingBoxes =  {}
-  
-  BoundingBoxes[1] = BOUNDING_BOX:New(X, Y, W/2, H/2)
-  BoundingBoxes[2] = BOUNDING_BOX:New(X, Y + H/2, W/2, H/2)
-  BoundingBoxes[3] = BOUNDING_BOX:New(X + W/2, Y + H/2, W/2, H/2)
-  BoundingBoxes[4] = BOUNDING_BOX:New(X + W/2, Y, W/2, H/2)
-  return BoundingBoxes
-end
-
 --- @type NODE
 NODE = {
   Point = nil,
@@ -117,11 +104,15 @@ function NODE:New(BoundingBox, Node_Previous)
 end
 
 function NODE:_Subdivide()
-  local NewBoundingBoxes = self.BoundingBox:GetNewQuadrants()
-  self.Node_SE = NODE:New(NewBoundingBoxes[1], self)
-  self.Node_NE = NODE:New(NewBoundingBoxes[2], self)
-  self.Node_NW = NODE:New(NewBoundingBoxes[3], self)
-  self.Node_SW = NODE:New(NewBoundingBoxes[4], self)
+  local X = self.BoundingBox.X
+  local Y = self.BoundingBox.Y
+  local W = self.BoundingBox.W
+  local H = self.BoundingBox.H
+
+  self.Node_SE = NODE:New(BOUNDING_BOX:New(X, Y, W/2, H/2), self)
+  self.Node_NE = NODE:New(BOUNDING_BOX:New(X, Y + H/2, W/2, H/2), self)
+  self.Node_NW = NODE:New(BOUNDING_BOX:New(X + W/2, Y + H/2, W/2, H/2), self)
+  self.Node_SW = NODE:New(BOUNDING_BOX:New(X + W/2, Y, W/2, H/2), self)
   return self
 end
 
@@ -558,7 +549,7 @@ for i=1, 20 do
   -- QuadtreeTestFind(MyQuadtree, 100000, 1, "random")
   -- QuadtreeTestUpdate(MyQuadtree, 100000, 1, "random")
   -- QuadtreeTestRemove(MyQuadtree, 100000, 1, "random")
-  QuadtreeTestInsert(MyQuadtree, 100000, 10)
+  QuadtreeTestInsert(MyQuadtree, 10000, 10)
 
   collectgarbage(collect)
 end
